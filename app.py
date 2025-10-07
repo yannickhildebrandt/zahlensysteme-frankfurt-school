@@ -1,149 +1,240 @@
 import streamlit as st
 import random
+import numpy as np # Wird für die bin->dez-Konvertierung genutzt
 
 # --- App-Konfiguration ---
 st.set_page_config(
-    page_title="Zahlen-Konverter-Coach",
-    page_icon="🧠",
-    layout="centered"
+    page_title="Zahlensystem-Entdecker",
+    page_icon="🧭",
+    layout="wide"
 )
 
-# --- Hilfsfunktionen für die Konvertierung ---
-def generate_question(difficulty):
-    """Generiert eine zufällige Frage und die dazugehörige Antwort."""
-    bases = {
-        "Dezimal": 10,
-        "Binär": 2,
-        "Oktal": 8,
-        "Hexadezimal": 16
-    }
-    
-    # Wähle zufällige Start- und Zielbasis
-    from_name, to_name = random.sample(list(bases.keys()), 2)
-    from_base, to_base = bases[from_name], bases[to_name]
+# --- App-Titel ---
+st.title("🧭 Der Zahlensystem-Entdecker")
+st.markdown("Lerne Schritt für Schritt, wie Zahlensysteme funktionieren und warum sie in der Informatik so wichtig sind.")
 
-    # Generiere eine zufällige Zahl basierend auf der Schwierigkeit
-    if difficulty == "Einfach":
-        decimal_number = random.randint(10, 100)
-    else: # Schwer
-        decimal_number = random.randint(101, 500)
+# --- Tabs für den Lernpfad ---
+tab_grundlagen, tab_binaer, tab_hex, tab_training = st.tabs([
+    "1. Grundlagen: Was ist ein Zahlensystem?", 
+    "2. Das Binärsystem (Basis 2)", 
+    "3. Das Hexadezimalsystem (Basis 16)", 
+    "4. Dein Trainingsplatz"
+])
 
-    # Konvertiere die Dezimalzahl in die Startbasis für die Frage
-    if from_base == 2:
-        question_val = bin(decimal_number)[2:]
-    elif from_base == 8:
-        question_val = oct(decimal_number)[2:]
-    elif from_base == 16:
-        question_val = hex(decimal_number)[2:].upper()
-    else: # Dezimal
-        question_val = str(decimal_number)
-
-    # Berechne die korrekte Antwort in der Zielbasis
-    if to_base == 2:
-        correct_answer = bin(decimal_number)[2:]
-    elif to_base == 8:
-        correct_answer = oct(decimal_number)[2:]
-    elif to_base == 16:
-        correct_answer = hex(decimal_number)[2:].upper()
-    else: # Dezimal
-        correct_answer = str(decimal_number)
-        
-    question_text = f"Wandle die **{from_name}**-Zahl **`{question_val}`** in das **{to_name}**-System um."
-    
-    # Erklärung des Lösungswegs
-    explanation = f"""
-    **Lösungsweg:**
-
-    1.  **Umwandlung in Dezimal (falls nötig):**
-        Die Zahl `{question_val}` (Basis {from_base}) entspricht der Dezimalzahl `{decimal_number}`.
-        
-    2.  **Umwandlung von Dezimal in die Zielbasis ({to_name}):**
-        Um `{decimal_number}` in das {to_name}-System (Basis {to_base}) umzuwandeln, teilt man die Zahl wiederholt durch {to_base} und notiert die Reste von unten nach oben.
-        
-    **Ergebnis:** Die korrekte Antwort ist **`{correct_answer}`**.
-    """
-
-    st.session_state.question_data = {
-        "text": question_text,
-        "answer": correct_answer,
-        "explanation": explanation
-    }
-
-
-# --- Initialisierung des Session State ---
-if 'score_correct' not in st.session_state:
-    st.session_state.score_correct = 0
-    st.session_state.total_questions = 0
-    st.session_state.last_answer_state = None # None, "correct", "incorrect"
-    st.session_state.show_explanation = False
-
-# --- App-Oberfläche ---
-
-# Titel
-st.title("🧠 Der Zahlen-Konverter-Coach")
-st.markdown("Trainiere hier deine Fähigkeiten im Umrechnen von Zahlensystemen!")
-
-# Seitenleiste für Einstellungen und Score
-with st.sidebar:
-    st.header("Einstellungen")
-    difficulty = st.radio(
-        "Wähle deine Schwierigkeit:",
-        ("Einfach", "Schwer"),
-        key="difficulty_selector"
+# ==============================================================================
+# TAB 1: GRUNDLAGEN
+# ==============================================================================
+with tab_grundlagen:
+    st.header("Alles beginnt mit dem, was du schon kennst: Das Dezimalsystem (Basis 10)")
+    st.write(
+        "Ein Zahlensystem ist nur eine Methode, um Zahlen darzustellen. Wir benutzen täglich das Dezimalsystem. "
+        "Es hat **zehn Ziffern (0-9)** und der Wert einer Ziffer hängt von ihrer **Position** ab."
     )
-    
-    st.header("Dein Spielstand")
-    # Verwende Spalten für eine saubere Darstellung
-    col1, col2 = st.columns(2)
-    col1.metric("Richtig", f"{st.session_state.score_correct}")
-    col2.metric("Fragen", f"{st.session_state.total_questions}")
 
-    if st.button("Spielstand zurücksetzen"):
+    st.subheader("Interaktiver Stellenwert-Explorer")
+    user_number_str = st.text_input("Gib eine Dezimalzahl ein (z.B. 253)", "253")
+    
+    try:
+        user_number = int(user_number_str)
+        st.markdown(f"Schauen wir uns die Zahl **{user_number}** genauer an:")
+        
+        cols = st.columns(len(user_number_str))
+        total_sum = []
+        
+        for i, digit in enumerate(user_number_str):
+            power = len(user_number_str) - 1 - i
+            value = int(digit) * (10**power)
+            
+            with cols[i]:
+                st.metric(label=f"10^{power}er-Stelle", value=digit)
+                st.write(f"= `{digit} * {10**power}`")
+            total_sum.append(f"{value}")
+        
+        st.success(f"**Zusammengesetzt ergibt das:** {' + '.join(total_sum)} = **{user_number}**")
+        st.info("Dieses Prinzip des **Stellenwerts** ist der Schlüssel zu **allen** anderen Zahlensystemen!")
+
+    except ValueError:
+        st.error("Bitte gib eine gültige ganze Zahl ein.")
+
+# ==============================================================================
+# TAB 2: BINÄRSYSTEM
+# ==============================================================================
+with tab_binaer:
+    st.header("Die Sprache der Computer: Das Binärsystem (Basis 2)")
+    st.markdown(
+        "Computer kennen nur zwei Zustände: Strom an (1) und Strom aus (0). Daher arbeiten sie mit dem Binärsystem. "
+        "Es hat nur **zwei Ziffern (0 und 1)**. Das Prinzip des Stellenwerts bleibt aber dasselbe, nur mit der **Basis 2**."
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Von Dezimal zu Binär: Die Divisionsmethode")
+        dez_in = st.number_input("Dezimalzahl zum Umwandeln:", min_value=0, value=42, step=1, key="d2b")
+        
+        if dez_in >= 0:
+            steps = []
+            remains = []
+            num = dez_in
+            
+            if num == 0:
+                st.code("0 / 2 = 0 Rest 0\n\nErgebnis (Reste von unten nach oben): 0", language="text")
+            else:
+                while num > 0:
+                    remainder = num % 2
+                    steps.append(f"{num: >3} / 2 = {num // 2: >3}   Rest: {remainder}")
+                    remains.append(str(remainder))
+                    num //= 2
+                
+                result_binary = "".join(reversed(remains))
+                steps_text = "\n".join(steps)
+                st.code(f"{steps_text}\n\nErgebnis (Reste von unten nach oben gelesen): {result_binary}", language="text")
+
+    with col2:
+        st.subheader("Von Binär zu Dezimal: Die Stellenwertmethode")
+        bin_in = st.text_input("Binärzahl zum Umwandeln:", "101010", key="b2d")
+
+        if all(c in '01' for c in bin_in) and bin_in:
+            steps = []
+            total = 0
+            
+            for i, digit in enumerate(reversed(bin_in)):
+                power = i
+                value = int(digit) * (2**power)
+                steps.append(f"{digit} * 2^{power} = {value}")
+                total += value
+            
+            st.code("\n".join(steps) + f"\n\nSumme: {total}", language="text")
+        else:
+            st.error("Bitte eine gültige Binärzahl (nur 0 und 1) eingeben.")
+
+# ==============================================================================
+# TAB 3: HEXADEZIMALSYSTEM
+# ==============================================================================
+with tab_hex:
+    st.header("Kompakt und praktisch: Das Hexadezimalsystem (Basis 16)")
+    st.markdown(
+        "Das Hexadezimalsystem ist in der Informatik beliebt, weil es eine sehr kompakte Schreibweise für lange Binärzahlen ist (eine Hex-Ziffer = vier Binär-Ziffern). "
+        "Es hat **16 Ziffern**: `0-9` und zusätzlich `A, B, C, D, E, F` für die Werte 10 bis 15."
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Von Dezimal zu Hexadezimal")
+        dez_in_hex = st.number_input("Dezimalzahl zum Umwandeln:", min_value=0, value=255, step=1, key="d2h")
+
+        if dez_in_hex >= 0:
+            hex_map = {10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F'}
+            steps = []
+            remains_str = []
+            num = dez_in_hex
+            
+            if num == 0:
+                 st.code("0 / 16 = 0 Rest 0\n\nErgebnis: 0", language="text")
+            else:
+                while num > 0:
+                    remainder = num % 16
+                    remainder_char = str(remainder) if remainder < 10 else hex_map[remainder]
+                    steps.append(f"{num: >4} / 16 = {num // 16: >4}   Rest: {remainder} ({remainder_char})")
+                    remains_str.append(remainder_char)
+                    num //= 16
+                
+                result_hex = "".join(reversed(remains_str))
+                st.code("\n".join(steps) + f"\n\nErgebnis (Reste von unten nach oben): {result_hex}", language="text")
+    
+    with col2:
+        st.subheader("Von Hexadezimal zu Dezimal")
+        hex_in = st.text_input("Hex-Zahl zum Umwandeln:", "FF", key="h2d").upper()
+
+        try:
+            # Teste, ob es eine gültige Hex-Zahl ist, indem wir sie konvertieren.
+            int(hex_in, 16)
+            
+            steps = []
+            total = 0
+            
+            for i, digit_char in enumerate(reversed(hex_in)):
+                power = i
+                # Konvertiere A-F in 10-15
+                value_dez = int(digit_char, 16)
+                value = value_dez * (16**power)
+                steps.append(f"{digit_char} * 16^{power} (= {value_dez} * {16**power}) = {value}")
+                total += value
+            
+            st.code("\n".join(steps) + f"\n\nSumme: {total}", language="text")
+
+        except (ValueError, TypeError):
+            st.error("Bitte eine gültige Hexadezimalzahl eingeben (0-9, A-F).")
+
+# ==============================================================================
+# TAB 4: TRAININGSPLATZ
+# ==============================================================================
+with tab_training:
+    st.header("Teste dein Wissen!")
+    st.markdown("Jetzt bist du dran! Wandle die zufällig generierten Zahlen um.")
+
+    # Session State für den Spielstand
+    if 'score_correct' not in st.session_state:
         st.session_state.score_correct = 0
         st.session_state.total_questions = 0
-        st.session_state.last_answer_state = None
+        st.session_state.current_question = None
+
+    def generate_training_question():
+        bases = ["Binär", "Dezimal", "Hexadezimal"]
+        from_base, to_base = random.sample(bases, 2)
+        
+        dec_value = random.randint(10, 255)
+        
+        if from_base == "Binär":
+            q_val = bin(dec_value)[2:]
+        elif from_base == "Hexadezimal":
+            q_val = hex(dec_value)[2:].upper()
+        else: # Dezimal
+            q_val = str(dec_value)
+            
+        if to_base == "Binär":
+            a_val = bin(dec_value)[2:]
+        elif to_base == "Hexadezimal":
+            a_val = hex(dec_value)[2:].upper()
+        else: # Dezimal
+            a_val = str(dec_value)
+            
+        st.session_state.current_question = {
+            "question": f"Wandle **`{q_val}`** (_{from_base}_) in das **{to_base}**-System um.",
+            "answer": a_val
+        }
+
+    # Initialisiere die erste Frage
+    if st.session_state.current_question is None:
+        generate_training_question()
+
+    # Score anzeigen
+    col1, col2, _ = st.columns([1, 1, 3])
+    col1.metric("Richtig ✅", st.session_state.score_correct)
+    col2.metric("Fragen ❔", st.session_state.total_questions)
+
+    # Frage anzeigen
+    st.markdown(st.session_state.current_question["question"])
+    
+    with st.form("training_form", clear_on_submit=True):
+        user_answer = st.text_input("Deine Antwort:", key="train_answer")
+        submitted = st.form_submit_button("Antwort prüfen")
+    
+    if submitted:
+        st.session_state.total_questions += 1
+        correct_answer = st.session_state.current_question["answer"]
+        
+        if user_answer.strip().upper() == correct_answer:
+            st.success("🎉 Korrekt! Sehr gut gemacht!")
+            st.session_state.score_correct += 1
+        else:
+            st.error(f"Leider falsch. Die richtige Antwort wäre **{correct_answer}** gewesen.")
+        
+        # Nächste Frage generieren für den nächsten Durchlauf
+        generate_training_question()
         st.experimental_rerun()
 
-# Generiere eine neue Frage, falls keine existiert
-if 'question_data' not in st.session_state:
-    generate_question(difficulty)
-
-# --- Hauptbereich: Frage und Antwort ---
-st.subheader(f"Frage #{st.session_state.total_questions + 1}")
-st.markdown(st.session_state.question_data["text"])
-
-# Antwortformular, um ein Neuladen bei jeder Eingabe zu verhindern
-with st.form(key="answer_form"):
-    user_answer = st.text_input("Deine Antwort:", placeholder="Gib hier deine Lösung ein")
-    submit_button = st.form_submit_button("Antwort prüfen")
-
-# Logik nach dem Absenden des Formulars
-if submit_button:
-    # Antworten sind nicht case-sensitive (wichtig für Hexadezimal)
-    if user_answer.strip().lower() == st.session_state.question_data["answer"].lower():
-        st.session_state.last_answer_state = "correct"
-        st.session_state.score_correct += 1
-    else:
-        st.session_state.last_answer_state = "incorrect"
-    
-    st.session_state.total_questions += 1
-    st.session_state.show_explanation = True # Zeige Erklärung nach jeder Antwort
-
-# Feedback anzeigen
-if st.session_state.last_answer_state == "correct":
-    st.success("🎉 Richtig! Super gemacht!")
-elif st.session_state.last_answer_state == "incorrect":
-    st.error(f"Leider falsch. Die richtige Antwort lautet: **{st.session_state.question_data['answer']}**")
-    
-# Erklärung anzeigen (falls gewünscht)
-if st.session_state.show_explanation and st.session_state.last_answer_state == "incorrect":
-     with st.expander("💡 Wie kommt man darauf? (Lösungsweg)"):
-         st.markdown(st.session_state.question_data["explanation"])
-
-
-# Button für die nächste Frage
-if st.button("Nächste Frage"):
-    generate_question(difficulty)
-    st.session_state.last_answer_state = None
-    st.session_state.show_explanation = False
-    st.experimental_rerun()
+    if st.button("Neue Frage überspringen"):
+        generate_training_question()
+        st.experimental_rerun()
