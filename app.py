@@ -233,8 +233,10 @@ with tab_training:
         
         # Nächste Frage generieren für den nächsten Durchlauf
         generate_training_question()
-        st.experimental_rerun()
+        # KORRIGIERT:
+        st.rerun()
 
     if st.button("Neue Frage überspringen"):
         generate_training_question()
-        st.experimental_rerun()
+        # KORRIGIERT:
+        st.rerun()
