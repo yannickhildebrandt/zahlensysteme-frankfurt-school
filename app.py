@@ -15,7 +15,44 @@ st.set_page_config(
 
 # --- KONSTANTEN FÜR DEN CONTEST ---
 HIGHSCORE_FILE = "highscore.json"
-STUDENT_LIST = ["Bitte Namen wählen", "Anna", "Ben", "Carla", "David", "Elif", "Felix", "Greta"] # Liste der Studierenden
+STUDENT_LIST = [
+    "Bitte Namen wählen", 
+    "Jasmin Michelle Agsten", 
+    "Annika Balke", 
+    "Nebahat Beller", 
+    "Peter Berg", 
+    "Emilia Bergmann", 
+    "Alessandro Dario Bonvecchi", 
+    "Andrea Deschermaier", 
+    "Luka Drinjak", 
+    "Cora Dücker", 
+    "Marcel Carsten Duve", 
+    "Wilhelm Erdmann", 
+    "Lazaros Gerdis", 
+    "Shania Erika Margit Hienzsch", 
+    "Rammon Hoch", 
+    "Pia Höpfner", 
+    "Nadine Klein", 
+    "Sophie Louise Krämer", 
+    "Natasa Petrov", 
+    "Kevin Plattner", 
+    "Selina Polat", 
+    "Tobias Richter", 
+    "Marie Robiné", 
+    "Jonas Rohde", 
+    "Celina Marie Ruf", 
+    "Noah Schäfer", 
+    "Gian-Luca Schmitt", 
+    "Tobias Schütt", 
+    "Noé-Li Schwab", 
+    "Hannah Stein", 
+    "Mery Surja-Morin", 
+    "Ibtissam Taiki", 
+    "Johanna Theßeling", 
+    "Robin Vallei", 
+    "Dimitrios Zotos", 
+    "Lisa Zysk"
+] # Liste der Studierenden 
 CONTEST_DURATION_SECONDS = 15 * 60 # 15 Minuten
 
 # --- App-Titel ---
